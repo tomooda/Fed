@@ -11,5 +11,6 @@ BaselineOfFed >> baseline: spec [
 	<baseline>
 	spec
 		package: 'Fed-Core' with: [ spec requires: #(  ) ];
-		group: 'default' with: #( 'Fed-Core' )
+		package: 'Fed-Examples' with: [ spec requires: #( 'Fed-Core' ) ];
+		group: 'default' with: #( 'Fed-Core' 'Fed-Examples' )
 ]

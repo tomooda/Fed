@@ -10,6 +10,20 @@ Class {
 	#package : 'Fed-Core'
 }
 
+{ #category : 'reading-writing' }
+FedWorkerPool class >> cleanUp: aTaskReference [
+
+	(self withResponseExtension: aTaskReference) ensureDelete.
+	(self withRequestExtension: aTaskReference) ensureDelete.
+	(self withInprogressExtension: aTaskReference) ensureDelete
+]
+
+{ #category : 'running' }
+FedWorkerPool class >> close [
+
+	self poolDirectory ensureDeleteAll
+]
+
 { #category : 'accessing' }
 FedWorkerPool class >> commandName [
 	"My subclasses may override this method to define its own command name."
@@ -43,6 +57,28 @@ FedWorkerPool class >> isAbstract [
 	^ self == FedWorkerPool
 ]
 
+{ #category : 'running' }
+FedWorkerPool class >> newWorker [
+
+	| vm image |
+	vm := Smalltalk vm fullPath.
+	image := Smalltalk imagePath.
+	FedLibC spawn: {
+			vm.
+			'--headless'.
+			image.
+			self commandName.
+			(self poolDirectory
+				 ensureCreateDirectory;
+				 fullName) }
+]
+
+{ #category : 'accessing' }
+FedWorkerPool class >> poolDirectory [
+
+	^ self subclassResponsibility
+]
+
 { #category : 'accessing' }
 FedWorkerPool class >> requestExtension [
 
@@ -53,22 +89,6 @@ FedWorkerPool class >> requestExtension [
 FedWorkerPool class >> responseExtension [
 
 	^ 'response'
-]
-
-{ #category : 'running' }
-FedWorkerPool class >> run: aFileReference [
-
-	| vm image |
-	vm := Smalltalk vm fullPath.
-	image := Smalltalk imagePath.
-	FedLibC spawn: {
-			vm.
-			'--headless'.
-			image.
-			self commandName.
-			(aFileReference
-				 ensureCreateDirectory;
-				 fullName) }
 ]
 
 { #category : 'accessing' }

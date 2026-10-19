@@ -68,17 +68,17 @@ FedLibC >> posix_spawn: path argv: argv env: env [
 { #category : 'operations' }
 FedLibC >> spawn: anArrayOfString [
 
-	self withArgv: anArrayOfString do: [ :argv |
-			OSPlatform current isWindows
-				ifTrue: [ self win32_spawnvp: P_NOWAIT cmdname: anArrayOfString first argv: argv ]
-				ifFalse: [
-						self
-							withArgv: (Array streamContents: [ :stream |
-										 OSEnvironment current keysAndValuesDo: [ :key :value |
-												 stream nextPut: ('=' join: {
-															  key.
-															  value }) ] ])
-							do: [ :env | self posix_spawn: anArrayOfString first argv: argv env: env ] ] ]
+	^ self withArgv: anArrayOfString do: [ :argv |
+			  OSPlatform current isWindows
+				  ifTrue: [ self win32_spawnvp: P_NOWAIT cmdname: anArrayOfString first argv: argv ]
+				  ifFalse: [
+						  self
+							  withArgv: (Array streamContents: [ :stream |
+										   OSEnvironment current keysAndValuesDo: [ :key :value |
+												   stream nextPut: ('=' join: {
+															    key.
+															    value }) ] ])
+							  do: [ :env | self posix_spawn: anArrayOfString first argv: argv env: env ] ] ]
 ]
 
 { #category : 'operations' }

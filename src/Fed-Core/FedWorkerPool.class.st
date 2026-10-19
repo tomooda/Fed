@@ -63,14 +63,14 @@ FedWorkerPool class >> newWorker [
 	| vm image |
 	vm := Smalltalk vm fullPath.
 	image := Smalltalk imagePath.
-	FedLibC spawn: {
-			vm.
-			'--headless'.
-			image.
-			self commandName.
-			(self poolDirectory
-				 ensureCreateDirectory;
-				 fullName) }
+	^ FedLibC spawn: {
+			  vm.
+			  '--headless'.
+			  image.
+			  self commandName.
+			  (self poolDirectory
+				   ensureCreateDirectory;
+				   fullName) }
 ]
 
 { #category : 'accessing' }

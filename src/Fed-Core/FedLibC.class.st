@@ -37,14 +37,42 @@ FedLibC class >> pid [
 ]
 
 { #category : 'operations' }
+FedLibC class >> rename: oldPathString to: newPathString [
+
+	^ self uniqueInstance rename: oldPathString to: newPathString
+]
+
+{ #category : 'operations' }
 FedLibC class >> spawn: anArrayOfString [
 
 	^ self uniqueInstance spawn: anArrayOfString
 ]
 
+{ #category : 'private - rename' }
+FedLibC >> LINUX_RENAME_NOREPLACE [
+
+	^ 1
+]
+
+{ #category : 'private - rename' }
+FedLibC >> MAC_RENAME_EXCL [
+
+	^ 4
+]
+
+{ #category : 'private - rename' }
+FedLibC >> linux_renameat2: olddirfd oldpath: oldpath newdirfd: newdirfd newpath: newpath flags: flags [
+	^ self ffiCall: #(int renameat2(int olddirfd, String oldpath, int newdirfd, String newpath, uint flags))
+]
+
 { #category : 'private - accessing' }
 FedLibC >> macLibraryName [
 	^ 'libc.dylib'
+]
+
+{ #category : 'private - rename' }
+FedLibC >> mac_renamex_np: oldPath to: newPath flags: flags [
+	^ self ffiCall: #(int renamex_np(String oldPath, String newPath, uint flags))
 ]
 
 { #category : 'operations' }
@@ -78,6 +106,22 @@ FedLibC >> posix_spawn: path argv: argv env: env [
 { #category : 'private - spawn' }
 FedLibC >> prim_posix_spawn: pid path: path argv: argv env: env [
 	^ self ffiCall: #(int posix_spawn(FedWriteBackIntValue pid ,  String path , nil , nil , void* argv, void *env))
+]
+
+{ #category : 'operations' }
+FedLibC >> rename: oldPath to: newPath [
+
+	| platform |
+	platform := OSPlatform current.
+	platform isMacOSX ifTrue: [ ^ (self mac_renamex_np: oldPath to: newPath flags: self MAC_RENAME_EXCL) = 0 ].
+	platform isLinux ifTrue: [
+			^ (self
+				   linux_renameat2: 0
+				   oldpath: oldPath
+				   newdirfd: 0
+				   newpath: newPath
+				   flags: self LINUX_RENAME_NOREPLACE) = 0 ].
+	self notYetImplemented
 ]
 
 { #category : 'operations' }

@@ -129,15 +129,13 @@ FedWorkerPool >> fetchTask [
 			| id |
 			id := nil.
 			(self poolDirectory filesMatching: '*.' , self class requestExtension) do: [ :ref |
-					(self withInprogressExtension: ref) exists ifFalse: [
+					((self withInprogressExtension: ref) exists not and: [ ref exists ]) ifTrue: [
 							id ifNil: [
 									[
 										id := self poolDirectory / UUID new asInteger asString.
 										id exists ] whileTrue.
 									id ensureCreateFile ].
-							([ id renameTo: (self withInprogressExtension: ref) basename ]
-								 on: FileExists
-								 do: [ :ex | ex return: nil ]) ifNotNil: [ ^ ref withoutExtension ] ] ].
+							(FedLibC rename: id fullName to: (self withInprogressExtension: ref) fullName) ifTrue: [ ^ ref withoutExtension ] ] ].
 			id ifNotNil: [ id ensureDelete ] ].
 	^ nil
 ]

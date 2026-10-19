@@ -1,10 +1,11 @@
 Class {
 	#name : 'FedWorkerPool',
-	#superclass : 'ClapApplication',
+	#superclass : 'FedWorker',
+	#traits : 'TFedPolling',
+	#classTraits : 'TFedPolling classTrait',
 	#instVars : [
 		'lastModificationTime',
-		'_poolDirectory',
-		'_pollingInterval'
+		'_poolDirectory'
 	],
 	#category : 'Fed-Core',
 	#package : 'Fed-Core'
@@ -25,23 +26,13 @@ FedWorkerPool class >> close [
 ]
 
 { #category : 'accessing' }
-FedWorkerPool class >> commandName [
-	"My subclasses may override this method to define its own command name."
-
-	^ 'fed'
-]
-
-{ #category : 'accessing' }
 FedWorkerPool class >> commandSpec [
 
-	^ (ClapCommandSpec id: self commandName asSymbol)
+	^ super commandSpec
 		  addPositional: #poolDirectory
 		  description: 'A fullpath to the pool directory to fetch <taskid>.request and write <taskid>.response';
 		  addFlagWithPositional: #interval
 		  description: 'The polling interval in milli-seconds to fetch a new request in the pool directory';
-		  description: 'A worker process for evaluation and execution of VDM-SL';
-		  commandClass: self;
-		  addHelp;
 		  yourself
 ]
 
@@ -60,17 +51,9 @@ FedWorkerPool class >> isAbstract [
 { #category : 'running' }
 FedWorkerPool class >> newWorker [
 
-	| vm image |
-	vm := Smalltalk vm fullPath.
-	image := Smalltalk imagePath.
-	^ FedLibC spawn: {
-			  vm.
-			  '--headless'.
-			  image.
-			  self commandName.
-			  (self poolDirectory
-				   ensureCreateDirectory;
-				   fullName) }
+	^ self spawnWith: (self poolDirectory
+			   ensureCreateDirectory;
+			   fullName)
 ]
 
 { #category : 'accessing' }
@@ -112,13 +95,31 @@ FedWorkerPool class >> withResponseExtension: aFileReference [
 { #category : 'defaults' }
 FedWorkerPool >> defaultPollingInterval [
 
-	^ 100
+	^ ((self
+		    positional: #interval
+		    ifPresent: [ :str |
+				    (str allSatisfy: #digit)
+					    ifTrue: [ str asInteger ]
+					    ifFalse: [ nil ] ]
+		    ifAbsent: [ nil ]) ifNil: [ 100 ]) milliSeconds
+]
+
+{ #category : 'execution' }
+FedWorkerPool >> doOneTask [
+
+	self fetchTask
+		ifNotNil: [ :taskRef |
+				| request response |
+				request := self readRequest: (self withRequestExtension: taskRef).
+				response := self process: request.
+				self writeResponse: response to: (self withResponseExtension: taskRef) ]
+		ifNil: [ self wait ]
 ]
 
 { #category : 'execution' }
 FedWorkerPool >> execute [
 
-	[ self poolDirectory isDirectory ] whileTrue: [ self oneCycle ]
+	[ self poolDirectory isDirectory ] whileTrue: [ self doOneTask ]
 ]
 
 { #category : 'execution' }
@@ -141,53 +142,16 @@ FedWorkerPool >> fetchTask [
 	^ nil
 ]
 
-{ #category : 'execution' }
-FedWorkerPool >> oneCycle [
-
-	self fetchTask
-		ifNotNil: [ :taskRef |
-				| request response |
-				request := self readRequest: (self withRequestExtension: taskRef).
-				response := self process: request.
-				self writeResponse: response to: (self withResponseExtension: taskRef) ]
-		ifNil: [ self wait ]
-]
-
-{ #category : 'accessing' }
-FedWorkerPool >> pollingInterval [
-
-	^ _pollingInterval ifNil: [
-			  _pollingInterval := ((self
-				                        positional: #interval
-				                        ifPresent: [ :str |
-						                        (str allSatisfy: #digit)
-							                        ifTrue: [ str asInteger ]
-							                        ifFalse: [ nil ] ]
-				                        ifAbsent: [ nil ]) ifNil: [ self defaultPollingInterval ]) milliSeconds ]
-]
-
 { #category : 'accessing' }
 FedWorkerPool >> poolDirectory [
 
 	^ _poolDirectory ifNil: [ _poolDirectory := (self positional: #poolDirectory) asFileReference ]
 ]
 
-{ #category : 'execution' }
-FedWorkerPool >> process: aTaskReference [
-
-	^ self subclassResponsibility
-]
-
 { #category : 'reading-writing' }
 FedWorkerPool >> readRequest: aFileReference [
 
 	^ self subclassResponsibility
-]
-
-{ #category : 'delaying' }
-FedWorkerPool >> wait [
-
-	^ self pollingInterval wait
 ]
 
 { #category : 'accessing' }

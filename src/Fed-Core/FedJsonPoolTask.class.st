@@ -5,6 +5,12 @@ Class {
 	#package : 'Fed-Core'
 }
 
+{ #category : 'testing' }
+FedJsonPoolTask class >> isAbstract [
+
+	^ self == FedJsonPoolTask
+]
+
 { #category : 'reading-writing' }
 FedJsonPoolTask >> readResponse: aFileReference [
 

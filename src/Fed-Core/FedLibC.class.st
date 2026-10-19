@@ -13,6 +13,9 @@ Class {
 		'P_OVERLAY',
 		'P_WAIT'
 	],
+	#pools : [
+		'LibCTypes'
+	],
 	#category : 'Fed-Core',
 	#package : 'Fed-Core'
 }
@@ -56,13 +59,25 @@ FedLibC >> pid [
 FedLibC >> posix_getpid [
 	"Get PID of current process."
 
-	 ^self ffiCall: #(int getpid(void))
+	 ^self ffiCall: #(pid_t getpid(void))
 ]
 
 { #category : 'private - spawn' }
 FedLibC >> posix_spawn: path argv: argv env: env [
 
-	^ self ffiCall: #(int posix_spawn(nil ,  String path , nil , nil , void* argv, void *env))
+	| pid |
+	pid := FedWriteBackIntValue new.
+	self
+		prim_posix_spawn: pid
+		path: path
+		argv: argv
+		env: env.
+	^ pid value
+]
+
+{ #category : 'private - spawn' }
+FedLibC >> prim_posix_spawn: pid path: path argv: argv env: env [
+	^ self ffiCall: #(int posix_spawn(FedWriteBackIntValue pid ,  String path , nil , nil , void* argv, void *env))
 ]
 
 { #category : 'operations' }

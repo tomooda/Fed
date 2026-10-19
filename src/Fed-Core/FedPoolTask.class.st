@@ -1,6 +1,8 @@
 Class {
 	#name : 'FedPoolTask',
-	#superclass : 'Object',
+	#superclass : 'FedTask',
+	#traits : 'TFedPolling',
+	#classTraits : 'TFedPolling classTrait',
 	#instVars : [
 		'pollingInterval'
 	],
@@ -8,35 +10,22 @@ Class {
 	#package : 'Fed-Core'
 }
 
+{ #category : 'testing' }
+FedPoolTask class >> isAbstract [
+
+	^ self == FedPoolTask
+]
+
 { #category : 'evaluating' }
 FedPoolTask class >> value: anObject [
 
 	^ self new value: anObject
 ]
 
-{ #category : 'class access' }
-FedPoolTask class >> workerPoolClass [
-
-	^ self subclassResponsibility
-]
-
 { #category : 'reading-writing' }
 FedPoolTask >> cleanUp: aTaskReference [
 
-	^ self workerPoolClass cleanUp: aTaskReference
-]
-
-{ #category : 'defaults' }
-FedPoolTask >> defaultPollingInterval [
-
-	^ 100 milliSeconds
-]
-
-{ #category : 'initialization' }
-FedPoolTask >> initialize [
-
-	super initialize.
-	pollingInterval := self defaultPollingInterval
+	^ self workerClass cleanUp: aTaskReference
 ]
 
 { #category : 'reading-writing' }
@@ -57,21 +46,9 @@ FedPoolTask >> newRequest [
 ]
 
 { #category : 'accessing' }
-FedPoolTask >> pollingInterval [
-
-	^ pollingInterval
-]
-
-{ #category : 'accessing' }
-FedPoolTask >> pollingInterval: anObject [
-
-	pollingInterval := anObject
-]
-
-{ #category : 'accessing' }
 FedPoolTask >> poolDirectory [
 
-	^ self workerPoolClass poolDirectory
+	^ self workerClass poolDirectory
 ]
 
 { #category : 'reading-writing' }
@@ -96,30 +73,25 @@ FedPoolTask >> value: anObject [
 { #category : 'waiting' }
 FedPoolTask >> wait [
 
-	pollingInterval ifNotNil: #wait
+	self pollingInterval ifNotNil: #wait
 ]
 
 { #category : 'accessing' }
 FedPoolTask >> withInprogressExtension: aFileReference [
 
-	^ self workerPoolClass withInprogressExtension: aFileReference
+	^ self workerClass withInprogressExtension: aFileReference
 ]
 
 { #category : 'accessing' }
 FedPoolTask >> withRequestExtension: aFileReference [
 
-	^ self workerPoolClass withRequestExtension: aFileReference
+	^ self workerClass withRequestExtension: aFileReference
 ]
 
 { #category : 'accessing' }
 FedPoolTask >> withResponseExtension: aFileReference [
 
-	^ self workerPoolClass withResponseExtension: aFileReference
-]
-
-{ #category : 'class access' }
-FedPoolTask >> workerPoolClass [
-	^ self class workerPoolClass
+	^ self workerClass withResponseExtension: aFileReference
 ]
 
 { #category : 'reading-writing' }

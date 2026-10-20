@@ -1,11 +1,11 @@
 Class {
 	#name : 'FedWorkerPool',
 	#superclass : 'FedWorker',
-	#traits : 'TFedPolling',
-	#classTraits : 'TFedPolling classTrait',
+	#traits : 'TFedRequestResponse',
+	#classTraits : 'TFedRequestResponse classTrait',
 	#instVars : [
 		'lastModificationTime',
-		'_poolDirectory'
+		'poolDirectory'
 	],
 	#category : 'Fed-Core',
 	#package : 'Fed-Core'
@@ -36,12 +36,6 @@ FedWorkerPool class >> commandSpec [
 		  yourself
 ]
 
-{ #category : 'accessing' }
-FedWorkerPool class >> inprogressExtension [
-
-	^ 'inprogress'
-]
-
 { #category : 'testing' }
 FedWorkerPool class >> isAbstract [
 
@@ -62,36 +56,6 @@ FedWorkerPool class >> poolDirectory [
 	^ self subclassResponsibility
 ]
 
-{ #category : 'accessing' }
-FedWorkerPool class >> requestExtension [
-
-	^ 'request'
-]
-
-{ #category : 'accessing' }
-FedWorkerPool class >> responseExtension [
-
-	^ 'response'
-]
-
-{ #category : 'accessing' }
-FedWorkerPool class >> withInprogressExtension: aFileReference [
-
-	^ aFileReference withExtension: self inprogressExtension
-]
-
-{ #category : 'accessing' }
-FedWorkerPool class >> withRequestExtension: aFileReference [
-
-	^ aFileReference withExtension: self requestExtension
-]
-
-{ #category : 'accessing' }
-FedWorkerPool class >> withResponseExtension: aFileReference [
-
-	^ aFileReference withExtension: self responseExtension
-]
-
 { #category : 'defaults' }
 FedWorkerPool >> defaultPollingInterval [
 
@@ -110,9 +74,9 @@ FedWorkerPool >> doOneTask [
 	self fetchTask
 		ifNotNil: [ :taskRef |
 				| request response |
-				request := self readRequest: (self withRequestExtension: taskRef).
+				request := self read: (self withRequestExtension: taskRef).
 				response := self process: request.
-				self writeResponse: response to: (self withResponseExtension: taskRef) ]
+				self write: response to: (self withResponseExtension: taskRef) ]
 		ifNil: [ self wait ]
 ]
 
@@ -143,35 +107,5 @@ FedWorkerPool >> fetchTask [
 { #category : 'accessing' }
 FedWorkerPool >> poolDirectory [
 
-	^ _poolDirectory ifNil: [ _poolDirectory := (self positional: #poolDirectory) asFileReference ]
-]
-
-{ #category : 'reading-writing' }
-FedWorkerPool >> readRequest: aFileReference [
-
-	^ self subclassResponsibility
-]
-
-{ #category : 'accessing' }
-FedWorkerPool >> withInprogressExtension: ref [
-
-	^ self class withInprogressExtension: ref
-]
-
-{ #category : 'accessing' }
-FedWorkerPool >> withRequestExtension: ref [
-
-	^ self class withRequestExtension: ref
-]
-
-{ #category : 'accessing' }
-FedWorkerPool >> withResponseExtension: ref [
-
-	^ self class withResponseExtension: ref
-]
-
-{ #category : 'reading-writing' }
-FedWorkerPool >> writeResponse: anObject to: aFileReference [
-
-	^ self subclassResponsibility
+	^ poolDirectory ifNil: [ poolDirectory := (self positional: #poolDirectory) asFileReference ]
 ]

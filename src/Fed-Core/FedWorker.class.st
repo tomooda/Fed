@@ -67,6 +67,12 @@ FedWorker >> doOneTask [
 ]
 
 { #category : 'execution' }
+FedWorker >> execute [
+
+	^ self subclassResponsibility
+]
+
+{ #category : 'execution' }
 FedWorker >> process: anObject [
 
 	^ self subclassResponsibility

@@ -11,6 +11,12 @@ FedTask class >> isAbstract [
 	^ self == FedTask
 ]
 
+{ #category : 'evaluating' }
+FedTask class >> value: anObject [
+
+	^ self new value: anObject
+]
+
 { #category : 'class access' }
 FedTask class >> workerClass [
 

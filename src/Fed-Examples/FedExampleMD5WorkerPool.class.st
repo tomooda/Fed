@@ -1,6 +1,8 @@
 Class {
 	#name : 'FedExampleMD5WorkerPool',
-	#superclass : 'FedJsonWorkerPool',
+	#superclass : 'FedWorkerPool',
+	#traits : 'TFedJson',
+	#classTraits : 'TFedJson classTrait',
 	#category : 'Fed-Examples',
 	#package : 'Fed-Examples'
 }
@@ -8,7 +10,7 @@ Class {
 { #category : 'accessing' }
 FedExampleMD5WorkerPool class >> commandName [
 
-	^ 'md5'
+	^ 'md5worker'
 ]
 
 { #category : 'accessing' }

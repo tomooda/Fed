@@ -11,14 +11,6 @@ Class {
 	#package : 'Fed-Core'
 }
 
-{ #category : 'reading-writing' }
-FedWorkerPool class >> cleanUp: aTaskReference [
-
-	(self withResponseExtension: aTaskReference) ensureDelete.
-	(self withRequestExtension: aTaskReference) ensureDelete.
-	(self withInprogressExtension: aTaskReference) ensureDelete
-]
-
 { #category : 'running' }
 FedWorkerPool class >> close [
 
@@ -74,7 +66,7 @@ FedWorkerPool >> doOneTask [
 	self fetchTask
 		ifNotNil: [ :taskRef |
 				| request response |
-				request := self read: (self withRequestExtension: taskRef).
+				request := self read: (self withInprogressExtension: taskRef).
 				response := self process: request.
 				self write: response to: (self withResponseExtension: taskRef) ]
 		ifNil: [ self wait ]
@@ -90,17 +82,7 @@ FedWorkerPool >> execute [
 FedWorkerPool >> fetchTask [
 
 	(lastModificationTime isNil or: [ lastModificationTime < self poolDirectory modificationTime ]) ifTrue: [
-			| id |
-			id := nil.
-			(self poolDirectory filesMatching: '*.' , self class requestExtension) do: [ :ref |
-					((self withInprogressExtension: ref) exists not and: [ ref exists ]) ifTrue: [
-							id ifNil: [
-									[
-										id := self poolDirectory / UUID new asInteger asString.
-										id exists ] whileTrue.
-									id ensureCreateFile ].
-							(FedLibC rename: id fullName to: (self withInprogressExtension: ref) fullName) ifTrue: [ ^ ref withoutExtension ] ] ].
-			id ifNotNil: [ id ensureDelete ] ].
+		^ self fetchTask: self requestExtension as: self inprogressExtension ].
 	^ nil
 ]
 

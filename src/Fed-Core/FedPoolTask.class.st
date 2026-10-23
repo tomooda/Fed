@@ -16,12 +16,6 @@ FedPoolTask class >> isAbstract [
 	^ self == FedPoolTask
 ]
 
-{ #category : 'reading-writing' }
-FedPoolTask >> cleanUp: aTaskReference [
-
-	^ self workerClass cleanUp: aTaskReference
-]
-
 { #category : 'accessing' }
 FedPoolTask >> poolDirectory [
 
@@ -32,10 +26,10 @@ FedPoolTask >> poolDirectory [
 FedPoolTask >> value: anObject [
 
 	| taskReference |
-	taskReference := self newRequest.
+	taskReference := self newTaskReference.
 	^ [
 		  self write: anObject to: (self withRequestExtension: taskReference).
-		  self pollAndRead: (self withResponseExtension: taskReference) ] ensure: [ self cleanUp: taskReference ]
+		  self pollAndRead: (self withResponseExtension: taskReference) ] ensure: [ self cleanUpFiles: taskReference ]
 ]
 
 { #category : 'waiting' }

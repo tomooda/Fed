@@ -14,6 +14,12 @@ TFedRequestResponse classSide >> inprogressExtension [
 ]
 
 { #category : 'accessing' }
+TFedRequestResponse classSide >> lockExtension [
+
+	^ 'lock'
+]
+
+{ #category : 'accessing' }
 TFedRequestResponse classSide >> requestExtension [
 
 	^ 'request'
@@ -32,6 +38,12 @@ TFedRequestResponse classSide >> withInprogressExtension: aFileReference [
 ]
 
 { #category : 'utilities' }
+TFedRequestResponse classSide >> withLockExtension: aFileReference [
+
+	^ aFileReference withExtension: self lockExtension
+]
+
+{ #category : 'utilities' }
 TFedRequestResponse classSide >> withRequestExtension: aFileReference [
 
 	^ aFileReference withExtension: self requestExtension
@@ -43,6 +55,12 @@ TFedRequestResponse classSide >> withResponseExtension: aFileReference [
 	^ aFileReference withExtension: self responseExtension
 ]
 
+{ #category : 'reading-writing' }
+TFedRequestResponse >> cleanUpFiles: aTaskReference [
+
+	(aTaskReference parent filesMatching: aTaskReference basename , '.*') do: [ :ref | ref ensureDelete ]
+]
+
 { #category : 'defaults' }
 TFedRequestResponse >> defaultPollingInterval [
 
@@ -50,20 +68,36 @@ TFedRequestResponse >> defaultPollingInterval [
 ]
 
 { #category : 'reading-writing' }
-TFedRequestResponse >> newRequest [
+TFedRequestResponse >> fetchTask: extension1 as: extension2 [
 
-	| id tmp |
+	(self poolDirectory filesMatching: '*.' , extension1) do: [ :ref |
+		(self rename: ref to: (ref withExtension: extension2)) ifTrue: [ ^ ref withoutExtension ] ].
+	^ nil
+]
+
+{ #category : 'utilities' }
+TFedRequestResponse >> inprogressExtension [
+
+	^ self class inprogressExtension
+]
+
+{ #category : 'utilities' }
+TFedRequestResponse >> lockExtension [
+
+	^ self class lockExtension
+]
+
+{ #category : 'reading-writing' }
+TFedRequestResponse >> newTaskReference [
+
+	| id lock |
 	[
 		id := self poolDirectory / UUID new asInteger asString.
 		id exists ] whileTrue.
 	id ensureCreateFile.
-	tmp := self withRequestExtension: id.
-	[
-		([ id renameTo: tmp basename ]
-			 on: FileExists
-			 do: [ :ex | ex return: nil ]) isNil ] whileTrue: [
-		tmp := self withRequestExtension: self poolDirectory / UUID new asInteger asString ].
-	^ id withoutExtension
+	lock := self withLockExtension: id.
+	[ self rename: id to: lock ] whileFalse: [ lock := self withLockExtension: self poolDirectory / UUID new asInteger asString ].
+	^ lock withoutExtension
 ]
 
 { #category : 'reading-writing' }
@@ -97,6 +131,24 @@ TFedRequestResponse >> read: aFileReference [
 	^ self subclassResponsibility
 ]
 
+{ #category : 'reading-writing' }
+TFedRequestResponse >> rename: aFileReference to: anotherFileReference [
+
+	^ FedLibC rename: aFileReference fullName to: anotherFileReference fullName
+]
+
+{ #category : 'utilities' }
+TFedRequestResponse >> requestExtension [
+
+	^ self class requestExtension
+]
+
+{ #category : 'utilities' }
+TFedRequestResponse >> responseExtension [
+
+	^ self class responseExtension
+]
+
 { #category : 'waiting' }
 TFedRequestResponse >> wait [
 
@@ -107,6 +159,12 @@ TFedRequestResponse >> wait [
 TFedRequestResponse >> withInprogressExtension: ref [
 
 	^ self class withInprogressExtension: ref
+]
+
+{ #category : 'utilities' }
+TFedRequestResponse >> withLockExtension: ref [
+
+	^ self class withLockExtension: ref
 ]
 
 { #category : 'utilities' }

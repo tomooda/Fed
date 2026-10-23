@@ -10,13 +10,6 @@ Class {
 	#package : 'Fed-Core'
 }
 
-{ #category : 'reading-writing' }
-FedOneShotWorker class >> cleanUp: aTaskReference [
-
-	(self withResponseExtension: aTaskReference) ensureDelete.
-	(self withRequestExtension: aTaskReference) ensureDelete
-]
-
 { #category : 'accessing' }
 FedOneShotWorker class >> commandSpec [
 

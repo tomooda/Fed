@@ -13,25 +13,19 @@ FedOneShotTask class >> isAbstract [
 	^ self == FedOneShotTask
 ]
 
-{ #category : 'reading-writing' }
-FedOneShotTask >> cleanUp: aTaskReference [
-
-	^ self workerClass cleanUp: aTaskReference
-]
-
 { #category : 'accessing' }
 FedOneShotTask >> poolDirectory [
 
 	^ self workerClass poolDirectory
 ]
 
-{ #category : 'accessing' }
+{ #category : 'evaluating' }
 FedOneShotTask >> value: anObject [
 
 	| taskReference |
-	taskReference := self newRequest.
+	taskReference := self newTaskReference.
 	^ [
 		  self write: anObject to: (self withRequestExtension: taskReference).
 		  self workerClass newWorker: taskReference.
-		  self pollAndRead: (self withResponseExtension: taskReference) ] ensure: [ self cleanUp: taskReference ]
+		  self pollAndRead: (self withResponseExtension: taskReference) ] ensure: [ self cleanUpFiles: taskReference ]
 ]

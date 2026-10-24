@@ -178,7 +178,7 @@ FedLibC >> win32_GetCurrentProcessId [
 ]
 
 { #category : 'private - rename' }
-FedLibC >> win32_rename: oldPath to: newPath [
+FedLibC >> win32_rename: oldpath to: newpath [
 	^ self ffiCall: #(int rename(String oldpath, String newpath))
 ]
 

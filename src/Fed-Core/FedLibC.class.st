@@ -121,7 +121,7 @@ FedLibC >> rename: oldPath to: newPath [
 				   newdirfd: 0
 				   newpath: newPath
 				   flags: self LINUX_RENAME_NOREPLACE) = 0 ].
-	platform isWindows ifTrue: [ ^ (self win32_MoveFileExA: oldPath to: newPath flags: 0) ~= 0 ].
+	platform isWindows ifTrue: [ ^ (self win32_rename: oldPath to: newPath) = 0 ].
 	self notYetImplemented
 ]
 
@@ -178,8 +178,8 @@ FedLibC >> win32_GetCurrentProcessId [
 ]
 
 { #category : 'private - rename' }
-FedLibC >> win32_MoveFileExA: oldPath to: newPath flags: flags [
-^ self ffiCall: #(int MoveFileExA(String oldPath, String newPath, uint32 flags))
+FedLibC >> win32_rename: oldPath to: newPath [
+	^ self ffiCall: #(int rename(String oldpath, String newpath))
 ]
 
 { #category : 'private - spawn' }

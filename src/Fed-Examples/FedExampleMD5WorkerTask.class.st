@@ -16,7 +16,7 @@ FedExampleMD5WorkerTask class >> exampleWithFedWorkerPool [
 		 4 timesRepeat: [ self workerClass newWorker ].
 		 4 timesRepeat: [
 				 [
-					 self value: FileLocator changes fullName.
+					 self value: PharoFilesOpener sourcesFile fullName.
 					 semaphore signal ] fork ].
 		 4 timesRepeat: [ semaphore wait ].
 		 self workerClass close ] millisecondsToRun / 1000.0) inspect
@@ -32,7 +32,7 @@ FedExampleMD5WorkerTask class >> exampleWithGreenThreads [
 		          aString asFileReference binaryReadStreamDo: [ :stream | (MD5NonPrimitive new hashMessage: stream contents) hex ] ].
 		 4 timesRepeat: [
 				 [
-					 block value: FileLocator changes fullName.
+					 block value: PharoFilesOpener sourcesFile fullName.
 					 semaphore signal ] fork ].
 		 4 timesRepeat: [ semaphore wait ] ] millisecondsToRun / 1000.0) inspect
 ]

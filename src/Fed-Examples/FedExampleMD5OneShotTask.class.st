@@ -15,7 +15,7 @@ FedExampleMD5OneShotTask class >> exampleWithFedSingleShotWorker [
 		 semaphore := Semaphore new.
 		 4 timesRepeat: [
 				 [
-					 self value: FileLocator changes fullName.
+					 self value: PharoFilesOpener sourcesFile fullName.
 					 semaphore signal ] fork ].
 		 4 timesRepeat: [ semaphore wait ] ] millisecondsToRun / 1000.0) inspect
 ]

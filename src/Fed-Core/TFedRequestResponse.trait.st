@@ -75,6 +75,17 @@ TFedRequestResponse >> fetchTask: extension1 as: extension2 [
 	^ nil
 ]
 
+{ #category : 'reading-writing' }
+TFedRequestResponse >> fetchTaskFromQueue: extension1 as: extension2 [
+
+	(self poolDirectory filesMatching: '*.' , extension1) ifNotEmpty: [ :files |
+			((files collect: [ :ref | ref basenameWithoutExtension asInteger -> ref ]) sorted: #key ascending) do: [ :assoc |
+					| ref |
+					ref := assoc key.
+					(self rename: ref to: (ref withExtension: extension2)) ifTrue: [ ^ ref withoutExtension ] ] ].
+	^ nil
+]
+
 { #category : 'utilities' }
 TFedRequestResponse >> inprogressExtension [
 
@@ -92,11 +103,12 @@ TFedRequestResponse >> newTaskReference [
 
 	| id lock |
 	[
-		id := self poolDirectory / UUID new asInteger asString.
+		id := self poolDirectory / Time microsecondClockValue asString.
 		id exists ] whileTrue.
 	id ensureCreateFile.
 	lock := self withLockExtension: id.
-	[ self rename: id to: lock ] whileFalse: [ lock := self withLockExtension: self poolDirectory / UUID new asInteger asString ].
+	[ self rename: id to: lock ] whileFalse: [
+		lock := self withLockExtension: self poolDirectory / Time microsecondClockValue asString ].
 	^ lock withoutExtension
 ]
 
